@@ -1,11 +1,13 @@
-export default function Card({ icon, index, action }) {
+export default function Card({ icon, index, action, flipped, disabled }) {
   const handleClick = () => {
-    action(icon);
+    if(!disabled){
+      action(icon);
+    }
   };
 
   return (
-    <div className="cartita" key={index} onClick={handleClick}>
-      {icon}
+    <div className={disabled ? "noSelected" : "cartita"} key={index} onClick={handleClick}>
+      {flipped ? icon : ""}
     </div>
   );
 }

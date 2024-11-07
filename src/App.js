@@ -1,42 +1,58 @@
 import "./App.css";
 import { useEffect, useState } from "react";
 import Card from "./components/cards/card";
+import Header from "./components/header/header";
 
 function App() {
   const [name, setName] = useState("");
-  const [cartaElegida1, setCartaElegida1] = useState("");
-  const [cartaElegida2, setCartaElegida2] = useState("");
+  const [cartaElegida1, setCartaElegida1] = useState(null);
+  const [cartaElegida2, setCartaElegida2] = useState(null);
+  const [disabled, setDisabled] = useState(false);
   const [cards, setCards] = useState([
-    "🐶",
-    "🐱",
-    "🐭",
-    "🐹",
-    "🐰",
-    "🦊",
-    "🐻",
-    "🐼",
-    "🐯",
-    "🦁",
-    "🐮",
-    "🐷",
+    { icon: "🐶", matched: false },
+    { icon: "🐱", matched: false },
+    { icon: "🐭", matched: false },
+    { icon: "🐹", matched: false },
+    // { icon: "🐰", id: 5, matched: false },
+    // { icon: "🦊", id: 6, matched: false },
+    // { icon: "🐻", id: 7, matched: false },
+    // { icon: "🐼", id: 8, matched: false },
+    // { icon: "🐯", id: 9, matched: false },
+    // { icon: "🦁", id: 10, matched: false },
+    // { icon: "🐮", id: 11, matched: false },
+    // { icon: "🐷", id: 12, matched: false },
   ]);
 
   useEffect(() => {
     const cardsMezcladas = shuffleArray(cards);
+    console.log(`Las cards mexclads son ${JSON.stringify(cardsMezcladas)}`);
     setCards(cardsMezcladas);
   }, []);
 
   useEffect(() => {
-    if (cartaElegida1 != "" && cartaElegida2 != "") {
-      if (cartaElegida1 === cartaElegida2) {
+    if (cartaElegida1?.icon != null && cartaElegida2?.icon != null) {
+      setDisabled(true);
+      if (cartaElegida1.icon === cartaElegida2.icon) {
         console.log(`Son iguales - queda boca arriba`);
+        cards.forEach((cartita) => {
+          if (cartita.icon === cartaElegida1.icon) {
+            cartita.matched = true;
+          }
+        });
+        setCards(cards);
+        setDisabled(false);
+        setCartaElegida1(null);
+        setCartaElegida2(null);
       } else {
+        setTimeout(() => {
+          setCartaElegida1(null);
+          setCartaElegida2(null);
+          setDisabled(false);
+        }, [2000]);
         console.log(`Son distintas - queda boca abajo`);
-      }
-
-      setCartaElegida1("");
-      setCartaElegida2("");
+      } 
     }
+    
   }, [cartaElegida1, cartaElegida2]);
 
   const handleName = (e) => {
@@ -44,8 +60,12 @@ function App() {
   };
 
   const shuffleArray = (cards) => {
-    let completeArray = cards.concat(cards);
-
+    console.log(`El listado recibido es ${cards}`);
+    let cards2 = cards.map((cart) => {
+      return { ...cart};
+    });
+    let completeArray = cards.concat(cards2);
+    console.log(`EL COM COMPLETE ARRAY ES ${completeArray}`);
     let currentIndex = completeArray.length,
       temporaryValue,
       randomIndex;
@@ -57,63 +77,36 @@ function App() {
       completeArray[currentIndex] = completeArray[randomIndex];
       completeArray[randomIndex] = temporaryValue;
     }
+    console.log(`El array completo es ${completeArray}`);
     return completeArray;
   };
 
-  const clickOn = (icon) => {
-    console.log(`Se hizo click en ${icon}`);
-    if (cartaElegida1 == "") {
-      setCartaElegida1(icon);
-      console.log(`Carta 1 es ${icon}`);
+  const clickOn = (carta) => {
+    console.log(`CLICK ${carta}`);
+    console.log(`Se hizo click en ${carta.icon}`);
+    if (cartaElegida1?.icon == null) {
+      setCartaElegida1(carta);
+      console.log(`Carta 1 es ${carta.icon}`);
     } else {
-      setCartaElegida2(icon);
-      console.log(`Carta 2 es ${icon}`);
+      setCartaElegida2(carta);
+      console.log(`Carta 2 es ${carta.icon}`);
     }
   };
 
   return (
     <>
-      <header>
-        <img src="images/logo.png" alt="Logo del Juego" />
-        <h1>Juego de la Memoria</h1>
-      </header>
-      <section>
-        <h2>Reglas:</h2>
-        <p>
-          Da la vuelta a 2 cartas. Si son iguales, se fijan y puedes seguir tu
-          turno. Sino, se vuelven a esconder y toca otro turno. La partida se
-          terminará cuando estén todas las parejas encontradas. Cuidado, se te
-          acaba el tiempo.{" "}
-        </p>
-      </section>
-
-      <section>
-        <h2>Datos:</h2>
-        <form>
-          <p>
-            <label for="nombre">Nombre:</label>
-            <input
-              name="nombre"
-              id="nombre"
-              type="text"
-              maxlength="40"
-              size="40"
-              onChange={handleName}
-            />
-          </p>
-          <p>
-            <label for="nivel">Nivel:</label>
-            <select id="nivel" name="nivel">
-              <option value="dificil">Difícil</option>
-              <option value="medio">Medio</option>
-              <option value="facil">Fácil</option>
-            </select>
-          </p>
-        </form>
-      </section>
+      <Header></Header>
       <main>
-        {cards.map((icon, index) => (
-          <Card icon={icon} key={index} action={clickOn}></Card>
+        {cards.map((carta, index) => (
+          <Card
+            icon={carta.icon}
+            key={index}
+            action={() => clickOn(carta)}
+            flipped={
+              carta == cartaElegida1 || carta == cartaElegida2 || carta.matched
+            }
+            disabled={disabled}
+          ></Card>
         ))}
       </main>
     </>
